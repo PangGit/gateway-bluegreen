@@ -26,12 +26,13 @@ import java.util.Map;
  * </pre></blockquote><p>
  */
 public class WeightRandomUtils {
+
     public static <T> WeightMeta<T> buildWeightMeta(final Map<T, Integer> weightMap) {
         if (weightMap.isEmpty()) {
             return null;
         }
         final int size = weightMap.size();
-        Object[] nodes = new Object[size];
+        T[] nodes = (T[]) new Object[size];
         int[] weights = new int[size];
         int index = 0;
         int weightAdder = 0;
@@ -39,7 +40,7 @@ public class WeightRandomUtils {
             nodes[index] = each.getKey();
             weights[index++] = (weightAdder = weightAdder + each.getValue());
         }
-        return new WeightMeta<T>((T[]) nodes, weights);
+        return new WeightMeta<>(nodes, weights);
     }
 
     public static void main(String[] args) {
@@ -48,6 +49,7 @@ public class WeightRandomUtils {
         map.put("v2", 2);
         WeightMeta<String> nodes = WeightRandomUtils.buildWeightMeta(map);
         for (int i = 0; i < 10; i++) {
+            assert nodes != null;
             System.out.println(nodes.random());
         }
 
