@@ -1,0 +1,50 @@
+server:
+  port: 9082
+# 配置输出日志
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.ipc.netty: DEBUG
+#开启端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+# 配置参考：https://www.cnblogs.com/babycomeon/p/11161073.html
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: consumer
+          uri: BlueGreenLb://consumer
+          predicates:
+            - Path=/consumer/**
+
+        - id: provider
+          uri: BlueGreenLb://provider
+          predicates:
+          - Path=/provider/**
+
+        # 通过访问http://localhost:9082/test/v1,来测试权重
+        - id: consumer-v1
+          uri: lb://consumer
+          predicates:
+            - Path=/test/**
+            - Weight=group1, 8
+          filters:
+            - AddRequestHeader=hello, world
+
+        - id: consumer-v2
+          uri: lb://consumer
+          predicates:
+            - Path=/test/**
+            - Weight=group1, 2
+          filters:
+            - StripPrefix=1

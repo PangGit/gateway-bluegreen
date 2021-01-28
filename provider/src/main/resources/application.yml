@@ -1,0 +1,22 @@
+---
+server:
+  port: 8001
+spring:
+  profiles: dev
+  cloud:
+    nacos:
+      discovery:
+        metadata:
+          version: v2021
+---
+server:
+  port: 8002
+spring:
+  profiles: test
+  cloud:
+    nacos:
+      discovery:
+        metadata:
+          version: v2020
+
+
