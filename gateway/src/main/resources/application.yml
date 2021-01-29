@@ -1,5 +1,6 @@
-server:
-  port: 9082
+## scheme component
+url:
+  scheme: BlueGreenLb
 # 配置输出日志
 logging:
   level:
@@ -23,14 +24,14 @@ spring:
           lower-case-service-id: true
       routes:
         - id: consumer
-          uri: BlueGreenLb://consumer
+          uri: ${url.scheme}://consumer
           predicates:
             - Path=/consumer/**
 
         - id: provider
-          uri: BlueGreenLb://provider
+          uri: ${url.scheme}://provider
           predicates:
-          - Path=/provider/**
+            - Path=/provider/**
 
         # 通过访问http://localhost:9082/test/v1,来测试权重
         - id: consumer-v1

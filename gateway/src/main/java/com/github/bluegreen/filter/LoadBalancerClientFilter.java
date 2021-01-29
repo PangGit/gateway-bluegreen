@@ -3,7 +3,7 @@ package com.github.bluegreen.filter;
 import com.github.bluegreen.loadbalancer.LoadBalancer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerUriTools;
 import org.springframework.cloud.client.loadbalancer.reactive.DefaultRequest;
@@ -35,13 +35,19 @@ public class LoadBalancerClientFilter implements GlobalFilter, Ordered {
 
     private static final int LOAD_BALANCER_CLIENT_FILTER_ORDER = 10150;
 
-    private final LoadBalancerClientFactory clientFactory;
+    private LoadBalancerClientFactory clientFactory;
 
     private LoadBalancerProperties properties;
 
-    public LoadBalancerClientFilter(LoadBalancerClientFactory clientFactory, LoadBalancerProperties properties) {
+    private Environment env;
+
+    @Value("${url.scheme}")
+    private String schema;
+
+    public LoadBalancerClientFilter(LoadBalancerClientFactory clientFactory, LoadBalancerProperties properties, Environment env) {
         this.clientFactory = clientFactory;
         this.properties = properties;
+        this.env = env;
     }
 
     @Override
@@ -51,10 +57,10 @@ public class LoadBalancerClientFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        URI url = (URI) exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
-        String schemePrefix = (String) exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_SCHEME_PREFIX_ATTR);
+        URI url = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
+        String schemePrefix = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_SCHEME_PREFIX_ATTR);
 
-        if (url != null && ("BlueGreenLb".equals(url.getScheme()) || "BlueGreenLb".equals(schemePrefix))) {
+        if (url != null && (schema.equals(url.getScheme()) || schema.equals(schemePrefix))) {
             ServerWebExchangeUtils.addOriginalRequestUrl(exchange, url);
             if (log.isTraceEnabled()) {
                 log.trace(ReactiveLoadBalancerClientFilter.class.getSimpleName() + " url before: " + url);
@@ -68,7 +74,7 @@ public class LoadBalancerClientFilter implements GlobalFilter, Ordered {
                     if (schemePrefix != null) {
                         overrideScheme = url.getScheme();
                     }
-                    DelegatingServiceInstance serviceInstance = new DelegatingServiceInstance((ServiceInstance) response.getServer(), overrideScheme);
+                    DelegatingServiceInstance serviceInstance = new DelegatingServiceInstance(response.getServer(), overrideScheme);
                     URI requestUrl = this.reconstructURI(serviceInstance, uri);
                     if (log.isTraceEnabled()) {
                         log.trace("LoadBalancerClientFilter url chosen: " + requestUrl);
@@ -86,23 +92,14 @@ public class LoadBalancerClientFilter implements GlobalFilter, Ordered {
     }
 
     private Mono<Response<ServiceInstance>> choose(ServerWebExchange exchange) {
-        URI uri = (URI) exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
-        LoadBalancer loadBalancer = new LoadBalancer(clientFactory.getLazyProvider(uri.getHost(), ServiceInstanceListSupplier.class), uri.getHost());
-        if (loadBalancer == null) {
-            throw new NotFoundException("No loadbalancer available for " + uri.getHost());
-        } else {
-            return loadBalancer.choose(this.createRequest(exchange));
-        }
+        URI uri = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
+        assert uri != null;
+        LoadBalancer loadBalancer = new LoadBalancer(clientFactory.getLazyProvider(uri.getHost(), ServiceInstanceListSupplier.class), uri.getHost(), env);
+        return loadBalancer.choose(this.createRequest(exchange));
     }
 
-    @Autowired
-    private Environment env;
-
-    private Request createRequest(ServerWebExchange exchange) {
+    private Request<?> createRequest(ServerWebExchange exchange) {
         HttpHeaders headers = exchange.getRequest().getHeaders();
-        String versionNo = headers.getFirst("version");
-        log.info("-----------0: " + env.getProperty("release." + versionNo));
-        Request<HttpHeaders> request = new DefaultRequest<>(headers);
-        return request;
+        return new DefaultRequest<>(headers);
     }
 }

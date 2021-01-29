@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "url.scheme",
+      "type": "java.lang.String",
+      "description": "Description for url.scheme."
+  }
+] }
