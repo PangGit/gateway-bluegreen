@@ -1,9 +1,12 @@
 package com.github.bluegreen.api;
 
-import com.github.api.consumer.IConsumerApi;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 
-@FeignClient("consumer")
-public interface ICApi extends IConsumerApi {
+@FeignClient(value = "consumer", path = "/consumer")
+public interface ICApi {
+
+    @GetMapping("/test1")
+    String test1();
 
 }

@@ -1,9 +1,11 @@
 package com.github.bluegreen.api;
 
-import com.github.api.provider.IProviderApi;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 
-@FeignClient(name = "provider")
-public interface IPApi extends IProviderApi {
+@FeignClient(name = "provider",path = "/provider")
+public interface IPApi {
 
+    @GetMapping("/test1")
+    String test1();
 }
