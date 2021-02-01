@@ -33,7 +33,7 @@ public class ProviderController {
     private ICApi api;
 
     @GetMapping(value = "/info")
-    public Map<String, String> info() throws NacosException {
+    public String info() throws NacosException {
         NamingService namingService = NacosFactory.createNamingService(nacosServerAddr);
         Map<String, String> metaData = new LinkedHashMap<>();
         List<Instance> instances = namingService.selectInstances(serviceName, true);
@@ -46,7 +46,7 @@ public class ProviderController {
                 }
             }
         }
-        return metaData;
+        return metaData.toString();
     }
 
     @GetMapping("/test")
