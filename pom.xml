@@ -12,7 +12,6 @@
         <module>gateway</module>
         <module>consumer</module>
         <module>provider</module>
-        <module>api</module>
     </modules>
 
     <packaging>pom</packaging>

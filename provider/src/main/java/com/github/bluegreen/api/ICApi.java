@@ -1,12 +1,15 @@
 package com.github.bluegreen.api;
 
+import com.alibaba.nacos.api.exception.NacosException;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.Map;
 
 @FeignClient(value = "consumer", path = "/consumer")
 public interface ICApi {
 
-    @GetMapping("/test1")
-    String test1();
+    @GetMapping(value = "/info")
+    Map<String, String> info() throws NacosException;
 
 }

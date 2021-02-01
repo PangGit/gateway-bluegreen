@@ -4,7 +4,6 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.github.api.consumer.IConsumerApi;
 import com.github.bluegreen.api.IPApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +18,7 @@ import java.util.Map;
 
 @RequestMapping("/consumer")
 @RestController
-public class ConsumerController implements IConsumerApi {
+public class ConsumerController {
 
     @Value("${spring.application.name}")
     private String serviceName;
@@ -50,13 +49,8 @@ public class ConsumerController implements IConsumerApi {
         return metaData;
     }
 
-    @Override
-    public String test1() {
-        return serviceName + "-" + this.getClass().getName() + "-" + Thread.currentThread().getStackTrace()[1].getMethodName();
-    }
-
-    @Override
-    public String test2() {
-        return this.test1() + "/n" + api.test1();
+    @GetMapping("/test")
+    public String test() throws NacosException {
+        return this.info() + "----------------" + api.info();
     }
 }
