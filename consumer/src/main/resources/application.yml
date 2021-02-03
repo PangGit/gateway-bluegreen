@@ -7,7 +7,7 @@ spring:
     nacos:
       discovery:
         metadata:
-          version: v2021
+          version: v2021 # 版本号
 ---
 server:
   port: 7002

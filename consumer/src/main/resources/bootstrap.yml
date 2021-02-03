@@ -17,6 +17,6 @@ spring:
         group: DEFAULT_GROUP
         fileExtension: yaml
         shared-configs:
-          - dataId: release.yaml
+          - dataId: release.yaml  # 版本分发，公共配置，每个服务都读取
             refresh: true
 
