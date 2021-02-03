@@ -10,6 +10,6 @@ import java.util.Map;
 public interface ICApi {
 
     @GetMapping(value = "/info")
-    Map<String, String> info() throws NacosException;
+    String info() throws NacosException;
 
 }
